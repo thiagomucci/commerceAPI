@@ -1,26 +1,85 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { LoginUserDto  } from './dto/login-user.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
-  create(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
+  constructor(private readonly prisma: PrismaService) {}
+
+  async create(dto: CreateUserDto) {
+    const emailExist = await this.prisma.user.findUnique({
+      where: { email: dto.email },
+    });
+    if(emailExist){
+      throw new ConflictException('Email inválido')};
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+      return 'Conta criada com sucesso'
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async login(dto: LoginUserDto) {
+    const user = await this.prisma.user.findUnique({
+      where: {email: dto.email}
+    });
+
+    if(!user) {
+      throw new UnauthorizedException('Credenciais inválidos');
+    }
+
+    const passwordMatches = await bcrypt.compare(dto.password, user.password)
+
+    if(!passwordMatches){
+      throw new UnauthorizedException('Credenciais inválidos');
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+    };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async getMe(id: string) {
+    const user = await this.prisma.user.findFirst({
+      where: {
+        id: id,
+        deleteTime: null
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createTime: true
+      },
+    });
+
+    if(!user){
+      throw new NotFoundException('Usuario não encontrado');
+    }
+
+    return user
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
-  }
+  async deleteMe(id: string) {
+     const user = await this.prisma.user.findFirst({
+      where: {
+        id: id,
+        deleteTime: null,
+      },
+    });
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    if(!user) {
+      throw new NotFoundException('Usuario não encontrado')
+    }
+
+    await this.prisma.user.update({
+      where: { id: id },
+      data: { deleteTime: new Date() },
+    });
+
+    return { message: 'Conta excluida' }
   }
 }
