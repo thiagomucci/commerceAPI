@@ -42,25 +42,22 @@ export class UsersService {
     };
   }
 
-  async getMe(id: string) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        id: id,
-        deleteTime: null
-      },
+   async getMe(id: string) {
+    return this.prisma.user.findFirst({
+      where: { id, deleteTime: null },
       select: {
         id: true,
         name: true,
         email: true,
-        createTime: true
+        createTime: true,
       },
     });
+  }
 
-    if(!user){
-      throw new NotFoundException('Usuario não encontrado');
-    }
-
-    return user
+  async findByEmail(email: string) {
+    return this.prisma.user.findFirst({
+      where: { email, deleteTime: null },
+    });
   }
 
   async deleteMe(id: string) {
