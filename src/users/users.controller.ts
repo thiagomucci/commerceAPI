@@ -3,31 +3,32 @@ import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { User } from 'src/common/decorators/user.decorator';
 
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
-  @Post('cadastro')
+  @Post('Cadastro')
   create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
 
-  @Post('login')
+  @Post('Login')
   login(@Body() loginUserDto: LoginUserDto) {
     return this.usersService.login(loginUserDto);
   }
 
   @UseGuards(JwtAuthGuard)
-    @Get('me')
-  getMe(@Req() req: any) {
-    return this.usersService.findByEmail(req.user.email)
+    @Get('Me')
+  getMe(@User() user: any) {
+    return this.usersService.findByEmail(user.email)
   }
 
   @UseGuards(JwtAuthGuard)
-  @Delete()
-  deleteMe(@Req() req: any) {
-    return this.usersService.deleteMe(req.user.id)
+  @Delete('Delete')
+  deleteMe(@User() user: any) {
+    return this.usersService.deleteMe(user.id)
   }
 }
