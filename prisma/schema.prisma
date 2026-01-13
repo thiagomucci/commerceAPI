@@ -19,7 +19,7 @@ model user {
   role role @default(USER)
   createTime DateTime @default(now())
   deleteTime DateTime?
-
+  
   @@index([deleteTime])
 }
 
