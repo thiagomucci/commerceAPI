@@ -1,6 +1,6 @@
 # commerce API
 
-A RESTful commerce API built as part of a personal framework and backend architecture study
+A RESTful commerce API built as part of a personal framework and backend architecture study it is not completed
 
 ## Description
 Commerce API provides the core features of a basic e-commerce system, including authentication, product management, and user handling
